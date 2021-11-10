@@ -6,12 +6,7 @@ from openpyxl import Workbook
 #
 #
 #
-# The objective of this program is to find the torque
-# of the magnetic couplings. The diameter, steel width,
-# magnet width and airgap and the number of poles can
-# be changed. The error of it should be 0.0225% compared
-# to the method of rotated. If I have some spare time,
-# the rotated method should be completed soon.
+# It's the code only drawing magnetic couplings
 #
 # Should be noticed:
 # The number of poles should only be even numbers
