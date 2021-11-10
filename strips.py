@@ -33,22 +33,20 @@ num = 4
 num_backup = num
 end = 50
 
+# Set the parameters for magnetic couplings
+Defined_diameter = 150.0
+Defined_diameter /= 2
+steel_width = 10
+magnet_width = 10
+air_gap = 1.0
+smart_mesh = 1
+
 while num <= end:
-
-	if num == 12:
-		num += 2
-		continue
-
-	# Set the parameters for magnetic couplings
-	diameter = 150.0
-	diameter /= 2
-	steel_width = 10
-	magnet_width = 10
-	air_gap = 1.0
 
 	# Defined poles
 	poles = num
 	degree = 360/poles
+	diameter = Defined_diameter
 
 	# Start up and connect to FEMM
 	femm.openfemm()
@@ -65,6 +63,16 @@ while num <= end:
 
 	# Set a porblem
 	femm.mi_probdef(0, 'millimeters','planar',1.e-8,1000,30)
+
+	# Open smart mesh
+	if smart_mesh == 0:
+		femm.mi_smartmesh(1)
+		smart_mesh = 1
+
+	if num == 12:
+		femm.mi_smartmesh(0)
+		smart_mesh = 0
+
 
 	# Set the boundary conditions
 	femm.mi_addboundprop('outside',0,0,0,0,0,0,0,0,0,0,0)
@@ -213,7 +221,11 @@ while num <= end:
 	String = 'A'+ str(middle)
 	wa[String] = result
 	mybook.save('result.xlsx')
+
+	# Making it a loop
 	num += 2
+
+
 
 
 
