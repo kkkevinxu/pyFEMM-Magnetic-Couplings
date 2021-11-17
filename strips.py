@@ -31,22 +31,82 @@ from openpyxl import Workbook
 # Set the start and the end of number of poles wanted
 num = 2
 num_backup = num
-end = 15
+end = 14
 
 # Set the parameters for magnetic couplings
 Defined_diameter = 150
 Defined_diameter /= 2
-steel_width = 10
-air_gap = 1.0
+air_gap = 2.0
 smart_mesh = 1
 poles = 22
 degree = 360/poles
+
+# Set the function of getting point
+def Draw_Points(magnet_width):
+	i = 0
+	# Draw counterclockwise
+	while i < poles:
+		# Draw nodes
+		femm.mi_addnode(diameter*math.cos(math.radians(degree*i)),diameter*math.sin(math.radians(degree*i)))
+		femm.mi_addnode((diameter-magnet_width)*math.cos(math.radians(degree*i)),(diameter-magnet_width)*math.sin(math.radians(degree*i)))
+		# Connect the nodes
+		femm.mi_addsegment(diameter*math.cos(math.radians(degree*i)),diameter*math.sin(math.radians(degree*i)),(diameter-magnet_width)*math.cos(math.radians(degree*i)),(diameter-magnet_width)*math.sin(math.radians(degree*i)))
+		if insidecircle == 1:
+			femm.mi_selectsegment((diameter-magnet_width/2)*math.cos(math.radians(degree*i)),(diameter-magnet_width/2)*math.sin(math.radians(degree*i)))
+			femm.mi_setgroup(1)
+			femm.mi_clearselected()
+		if i > 0:
+			femm.mi_addarc(diameter*math.cos(math.radians(degree*(i-1))),diameter*math.sin(math.radians(degree*(i-1))),diameter*math.cos(math.radians(degree*i)),diameter*math.sin(math.radians(degree*i)),degree,1)
+			femm.mi_addarc((diameter-magnet_width)*math.cos(math.radians(degree*(i-1))),(diameter-magnet_width)*math.sin(math.radians(degree*(i-1))),(diameter-magnet_width)*math.cos(math.radians(degree*i)),(diameter-magnet_width)*math.sin(math.radians(degree*i)),degree,1)
+			if insidecircle == 1:
+				femm.mi_selectarcsegment(diameter*math.cos(math.radians(degree*(i-1))),diameter*math.sin(math.radians(degree*(i-1))))
+				femm.mi_selectarcsegment((diameter-magnet_width)*math.cos(math.radians(degree*(i-1))),(diameter-magnet_width)*math.sin(math.radians(degree*(i-1))))
+				femm.mi_setgroup(1)
+				femm.mi_clearselected()
+		i+=1
+	# Draw the last arc
+	femm.mi_addarc(diameter*math.cos(math.radians(degree*(i-1))),diameter*math.sin(math.radians(degree*(i-1))),diameter*math.cos(math.radians(degree*i)),diameter*math.sin(math.radians(degree*i)),degree,1)
+	femm.mi_addarc((diameter-magnet_width)*math.cos(math.radians(degree*(i-1))),(diameter-magnet_width)*math.sin(math.radians(degree*(i-1))),(diameter-magnet_width)*math.cos(math.radians(degree*i)),(diameter-magnet_width)*math.sin(math.radians(degree*i)),degree,1)
+	if insidecircle == 1:
+		femm.mi_selectarcsegment(diameter*math.cos(math.radians(degree*(i-1))),diameter*math.sin(math.radians(degree*(i-1))))
+		femm.mi_selectarcsegment((diameter-magnet_width)*math.cos(math.radians(degree*(i-1))),(diameter-magnet_width)*math.sin(math.radians(degree*(i-1))))
+		femm.mi_setgroup(1)
+		femm.mi_clearselected()
+
+# Set the block material
+def Add_Material(magnet_width):
+	t = 0.0
+	while t < poles:
+		if insidecircle == 0:
+			femm.mi_addblocklabel((diameter-magnet_width/2)*math.cos(math.radians(degree*(0.5+t))),(diameter-magnet_width/2)*math.sin(math.radians(degree*(0.5+t))))
+			femm.mi_selectlabel((diameter-magnet_width/2)*math.cos(math.radians(degree*(1/2+t))),(diameter-magnet_width/2)*math.sin(math.radians(degree*(1/2+t))))
+		if insidecircle == 1:
+			femm.mi_addblocklabel((diameter-magnet_width/2)*math.cos(math.radians(degree*t)),(diameter-magnet_width/2)*math.sin(math.radians(degree*t)))
+			femm.mi_selectlabel((diameter-magnet_width/2)*math.cos(math.radians(degree*t)),(diameter-magnet_width/2)*math.sin(math.radians(degree*t)))
+		if t%2 == 1:
+			if insidecircle == 0:
+				# femm.mi_setblockprop('NdFeB 32 MGOe',0,0.1,'<None>',(t+0.5)*degree-180,0,1)
+				femm.mi_setblockprop('NdFeB 32 MGOe',1,0,'<None>',(t+0.5)*degree-180,0,1)
+			if insidecircle == 1:
+				# femm.mi_setblockprop('NdFeB 32 MGOe',0,0.1,'<None>',t*degree-180,0,1)
+				femm.mi_setblockprop('NdFeB 32 MGOe',1,0,'<None>',t*degree-180,0,1)
+		else:
+			if insidecircle == 0:
+				# femm.mi_setblockprop('NdFeB 32 MGOe',0,0.1,'<None>',((t+0.5)*degree)*pow(-1,t),0,1)
+				femm.mi_setblockprop('NdFeB 32 MGOe',1,0,'<None>',((t+0.5)*degree)*pow(-1,t),0,1)
+			if insidecircle == 1:
+				# femm.mi_setblockprop('NdFeB 32 MGOe',0,0.1,'<None>',(t*degree)*pow(-1,t),0,1)
+				femm.mi_setblockprop('NdFeB 32 MGOe',1,0,'<None>',(t*degree)*pow(-1,t),0,1)
+		femm.mi_clearselected()
+		t +=1.0
+
 
 while num <= end:
 
 	# Defined poles
 	diameter = Defined_diameter
-	magnet_width = num
+	magnet_width1 = num
+	steel_width = 4
 
 	# Start up and connect to FEMM
 	femm.openfemm()
@@ -82,65 +142,8 @@ while num <= end:
 	femm.mi_getmaterial('1006 Steel')
 	femm.mi_getmaterial('NdFeB 32 MGOe')
 
-	# Set the function of getting point
-	def Draw_Points():
-		i = 0
-		# Draw counterclockwise
-		while i < poles:
-			# Draw nodes
-			femm.mi_addnode(diameter*math.cos(math.radians(degree*i)),diameter*math.sin(math.radians(degree*i)))
-			femm.mi_addnode((diameter-magnet_width)*math.cos(math.radians(degree*i)),(diameter-magnet_width)*math.sin(math.radians(degree*i)))
-			# Connect the nodes
-			femm.mi_addsegment(diameter*math.cos(math.radians(degree*i)),diameter*math.sin(math.radians(degree*i)),(diameter-magnet_width)*math.cos(math.radians(degree*i)),(diameter-magnet_width)*math.sin(math.radians(degree*i)))
-			if insidecircle == 1:
-				femm.mi_selectsegment((diameter-magnet_width/2)*math.cos(math.radians(degree*i)),(diameter-magnet_width/2)*math.sin(math.radians(degree*i)))
-				femm.mi_setgroup(1)
-				femm.mi_clearselected()
-			if i > 0:
-				femm.mi_addarc(diameter*math.cos(math.radians(degree*(i-1))),diameter*math.sin(math.radians(degree*(i-1))),diameter*math.cos(math.radians(degree*i)),diameter*math.sin(math.radians(degree*i)),degree,1)
-				femm.mi_addarc((diameter-magnet_width)*math.cos(math.radians(degree*(i-1))),(diameter-magnet_width)*math.sin(math.radians(degree*(i-1))),(diameter-magnet_width)*math.cos(math.radians(degree*i)),(diameter-magnet_width)*math.sin(math.radians(degree*i)),degree,1)
-				if insidecircle == 1:
-					femm.mi_selectarcsegment(diameter*math.cos(math.radians(degree*(i-1))),diameter*math.sin(math.radians(degree*(i-1))))
-					femm.mi_selectarcsegment((diameter-magnet_width)*math.cos(math.radians(degree*(i-1))),(diameter-magnet_width)*math.sin(math.radians(degree*(i-1))))
-					femm.mi_setgroup(1)
-					femm.mi_clearselected()
-			i+=1
-		# Draw the last arc
-		femm.mi_addarc(diameter*math.cos(math.radians(degree*(i-1))),diameter*math.sin(math.radians(degree*(i-1))),diameter*math.cos(math.radians(degree*i)),diameter*math.sin(math.radians(degree*i)),degree,1)
-		femm.mi_addarc((diameter-magnet_width)*math.cos(math.radians(degree*(i-1))),(diameter-magnet_width)*math.sin(math.radians(degree*(i-1))),(diameter-magnet_width)*math.cos(math.radians(degree*i)),(diameter-magnet_width)*math.sin(math.radians(degree*i)),degree,1)
-		if insidecircle == 1:
-			femm.mi_selectarcsegment(diameter*math.cos(math.radians(degree*(i-1))),diameter*math.sin(math.radians(degree*(i-1))))
-			femm.mi_selectarcsegment((diameter-magnet_width)*math.cos(math.radians(degree*(i-1))),(diameter-magnet_width)*math.sin(math.radians(degree*(i-1))))
-			femm.mi_setgroup(1)
-			femm.mi_clearselected()
-
-	# Set the block material
-	def Add_Material():
-		t = 0.0
-		while t < poles:
-			if insidecircle == 0:
-				femm.mi_addblocklabel((diameter-magnet_width/2)*math.cos(math.radians(degree*(0.5+t))),(diameter-magnet_width/2)*math.sin(math.radians(degree*(0.5+t))))
-				femm.mi_selectlabel((diameter-magnet_width/2)*math.cos(math.radians(degree*(1/2+t))),(diameter-magnet_width/2)*math.sin(math.radians(degree*(1/2+t))))
-			if insidecircle == 1:
-				femm.mi_addblocklabel((diameter-magnet_width/2)*math.cos(math.radians(degree*t)),(diameter-magnet_width/2)*math.sin(math.radians(degree*t)))
-				femm.mi_selectlabel((diameter-magnet_width/2)*math.cos(math.radians(degree*t)),(diameter-magnet_width/2)*math.sin(math.radians(degree*t)))
-			if t%2 == 1:
-				if insidecircle == 0:
-					# femm.mi_setblockprop('NdFeB 32 MGOe',0,0.1,'<None>',(t+0.5)*degree-180,0,1)
-					femm.mi_setblockprop('NdFeB 32 MGOe',1,0,'<None>',(t+0.5)*degree-180,0,1)
-				if insidecircle == 1:
-					# femm.mi_setblockprop('NdFeB 32 MGOe',0,0.1,'<None>',t*degree-180,0,1)
-					femm.mi_setblockprop('NdFeB 32 MGOe',1,0,'<None>',t*degree-180,0,1)
-			else:
-				if insidecircle == 0:
-					# femm.mi_setblockprop('NdFeB 32 MGOe',0,0.1,'<None>',((t+0.5)*degree)*pow(-1,t),0,1)
-					femm.mi_setblockprop('NdFeB 32 MGOe',1,0,'<None>',((t+0.5)*degree)*pow(-1,t),0,1)
-				if insidecircle == 1:
-					# femm.mi_setblockprop('NdFeB 32 MGOe',0,0.1,'<None>',(t*degree)*pow(-1,t),0,1)
-					femm.mi_setblockprop('NdFeB 32 MGOe',1,0,'<None>',(t*degree)*pow(-1,t),0,1)
-			femm.mi_clearselected()
-			t +=1.0
-	materialadded = 1
+	# Calculate area and make them equal
+	magnet_area = (diameter - steel_width)*(diameter - steel_width)*math.pi-(diameter - steel_width-magnet_width1)*(diameter - steel_width-magnet_width1)*math.pi
 
 
 
@@ -168,24 +171,27 @@ while num <= end:
 
 	# Draw the magnets and add material properties
 	diameter -= steel_width
-	Draw_Points()
-	Add_Material()
+	Draw_Points(magnet_width1)
+	Add_Material(magnet_width1)
 
-	# Add material property for the metal of the air gap
-	femm.mi_addblocklabel(diameter-(air_gap/2+magnet_width),0)
-	femm.mi_selectlabel(diameter-(air_gap/2+magnet_width),0)
+	# Add material property for the metal and of the air gap
+	femm.mi_addblocklabel(diameter-(air_gap/2+magnet_width1),0)
+	femm.mi_selectlabel(diameter-(air_gap/2+magnet_width1),0)
 	# femm.mi_setblockprop('Air',0,0.1,'<None>',0,0,1)
 	femm.mi_setblockprop('Air',1,0,'<None>',0,0,1)
 	femm.mi_clearselected()
 
+	magnet_width2 = ((diameter-magnet_width1-air_gap)*(diameter-magnet_width1-air_gap) - magnet_area/math.pi)**0.5
+
 	# For inside circle
-	diameter -= (air_gap + magnet_width)
+	diameter -= (air_gap + magnet_width1)
 	insidecircle = 1
-	Draw_Points()
+	magnet_width2 = diameter - magnet_width2
+	Draw_Points(magnet_width2)
 	femm.mi_selectgroup(1)
 	femm.mi_moverotate(0,0,degree/2)
 	femm.mi_clearselected()
-	Add_Material()
+	Add_Material(magnet_width2)
 
 	# Add material property for the metal of the small circle
 	femm.mi_addblocklabel(diameter/2,0)
@@ -205,7 +211,7 @@ while num <= end:
 	result = 0.0
 	m = 0
 	while m < poles:
-		femm.mo_selectblock((diameter-magnet_width/2)*math.cos(math.radians(degree*m)),(diameter-magnet_width/2)*math.sin(math.radians(degree*m)))
+		femm.mo_selectblock((diameter-magnet_width2/2)*math.cos(math.radians(degree*m)),(diameter-magnet_width2/2)*math.sin(math.radians(degree*m)))
 		m += 1
 	femm.mo_selectblock(diameter/2,0)
 	result = femm.mo_blockintegral(22)
