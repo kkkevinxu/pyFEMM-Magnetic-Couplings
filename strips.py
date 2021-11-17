@@ -29,15 +29,15 @@ from openpyxl import Workbook
 
 
 # Set the start and the end of number of poles wanted
-num = 4
+num = 22
 num_backup = num
-end = 50
+end = 22
 
 # Set the parameters for magnetic couplings
-Defined_diameter = 150.0
+Defined_diameter = 145.0
 Defined_diameter /= 2
-steel_width = 10
-magnet_width = 10
+steel_width = 5
+magnet_width = 4
 air_gap = 1.0
 smart_mesh = 1
 
@@ -62,7 +62,7 @@ while num <= end:
 	materialadded = 0
 
 	# Set a porblem
-	femm.mi_probdef(0, 'millimeters','planar',1.e-8,1000,30)
+	femm.mi_probdef(0, 'millimeters','planar',1.e-8,10,30)
 
 	# Open smart mesh
 	if smart_mesh == 0:
