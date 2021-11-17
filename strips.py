@@ -29,24 +29,24 @@ from openpyxl import Workbook
 
 
 # Set the start and the end of number of poles wanted
-num = 22
+num = 2
 num_backup = num
-end = 22
+end = 15
 
 # Set the parameters for magnetic couplings
-Defined_diameter = 145.0
+Defined_diameter = 150
 Defined_diameter /= 2
-steel_width = 5
-magnet_width = 4
+steel_width = 10
 air_gap = 1.0
 smart_mesh = 1
+poles = 22
+degree = 360/poles
 
 while num <= end:
 
 	# Defined poles
-	poles = num
-	degree = 360/poles
 	diameter = Defined_diameter
+	magnet_width = num
 
 	# Start up and connect to FEMM
 	femm.openfemm()
@@ -69,7 +69,7 @@ while num <= end:
 		femm.mi_smartmesh(1)
 		smart_mesh = 1
 
-	if num == 12:
+	if num == 6:
 		femm.mi_smartmesh(0)
 		smart_mesh = 0
 
@@ -217,13 +217,13 @@ while num <= end:
 	if num == num_backup:
 		mybook = Workbook()
 	wa = mybook.active
-	middle = int(num/2) - 1
+	middle = num - 1
 	String = 'A'+ str(middle)
 	wa[String] = result
 	mybook.save('result.xlsx')
 
 	# Making it a loop
-	num += 2
+	num += 1
 
 
 
