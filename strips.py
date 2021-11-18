@@ -31,11 +31,11 @@ from openpyxl import Workbook
 # Set the start and the end of number of poles wanted
 num = 3500
 num_backup = num
-end = 3900
+end = 3700
 
-num2 = 3.5
+num2 = 3.7
 num2_backup = num2
-end2 = 4.5
+end2 = 4.3
 
 # Set the parameters for magnetic couplings
 Defined_diameter = 150
@@ -232,14 +232,14 @@ while num2 <= end2:
 		if num == num_backup and num2 == num2_backup:
 			mybook = Workbook()
 		wa = mybook.active
-		middle = int(num/100 - 35+num2*20)
+		middle = int(num/10 - 350+num2*100)
 		String = 'A'+ str(middle)
 		wa[String] = result
 		mybook.save('result.xlsx')
 
 		# Making it a loop
-		num += 100
-	num2 = num2 + 0.5
+		num += 10
+	num2 = num2 + 0.1
 	num = num_backup
 
 
