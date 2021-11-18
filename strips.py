@@ -29,14 +29,18 @@ from openpyxl import Workbook
 
 
 # Set the start and the end of number of poles wanted
-num = 2
+num = 3500
 num_backup = num
-end = 14
+end = 3900
+
+num2 = 3.5
+num2_backup = num2
+end2 = 4.5
 
 # Set the parameters for magnetic couplings
 Defined_diameter = 150
 Defined_diameter /= 2
-air_gap = 2.0
+air_gap = 1.0
 smart_mesh = 1
 poles = 22
 degree = 360/poles
@@ -100,136 +104,143 @@ def Add_Material(magnet_width):
 		femm.mi_clearselected()
 		t +=1.0
 
+while num2 <= end2:
 
-while num <= end:
+	while num <= end:
 
-	# Defined poles
-	diameter = Defined_diameter
-	magnet_width1 = num
-	steel_width = 4
+		# Defined poles
+		diameter = Defined_diameter
+		magnet_area = num
+		steel_width = num2
 
-	# Start up and connect to FEMM
-	femm.openfemm()
+		# magnet_width1 = num
+		magnet_width1 = ((diameter-steel_width)*(diameter-steel_width) - magnet_area/math.pi)**0.5
+		magnet_width1 = diameter - steel_width - magnet_width1
 
-	# Create a new electrostatics problem
-	femm.newdocument(0)
+		# Start up and connect to FEMM
+		femm.openfemm()
 
-
-	# Flag to judge if its the inside circle
-	insidecircle = 0
-
-	#Flag to judge if the material is added for the outside circle
-	materialadded = 0
-
-	# Set a porblem
-	femm.mi_probdef(0, 'millimeters','planar',1.e-8,10,30)
-
-	# Open smart mesh
-	if smart_mesh == 0:
-		femm.mi_smartmesh(1)
-		smart_mesh = 1
-
-	if num == 6:
-		femm.mi_smartmesh(0)
-		smart_mesh = 0
+		# Create a new electrostatics problem
+		femm.newdocument(0)
 
 
-	# Set the boundary conditions
-	femm.mi_addboundprop('outside',0,0,0,0,0,0,0,0,0,0,0)
+		# Flag to judge if its the inside circle
+		insidecircle = 0
 
-	# Set the materials
-	femm.mi_getmaterial('Air')
-	femm.mi_getmaterial('1006 Steel')
-	femm.mi_getmaterial('NdFeB 32 MGOe')
+		#Flag to judge if the material is added for the outside circle
+		materialadded = 0
 
-	# Calculate area and make them equal
-	magnet_area = (diameter - steel_width)*(diameter - steel_width)*math.pi-(diameter - steel_width-magnet_width1)*(diameter - steel_width-magnet_width1)*math.pi
+		# Set a porblem
+		femm.mi_probdef(0, 'millimeters','planar',1.e-8,10,30)
+
+		# Open smart mesh
+		if smart_mesh == 0:
+			femm.mi_smartmesh(1)
+			smart_mesh = 1
+
+		if num == 6:
+			femm.mi_smartmesh(0)
+			smart_mesh = 0
+
+
+		# Set the boundary conditions
+		femm.mi_addboundprop('outside',0,0,0,0,0,0,0,0,0,0,0)
+
+		# Set the materials
+		femm.mi_getmaterial('Air')
+		femm.mi_getmaterial('1006 Steel')
+		femm.mi_getmaterial('NdFeB 32 MGOe')
+
+		# Calculate area and make them equal
+		# magnet_area = (diameter - steel_width)*(diameter - steel_width)*math.pi-(diameter - steel_width-magnet_width1)*(diameter - steel_width-magnet_width1)*math.pi
 
 
 
-	# Draw the greometry and add boundary condition
-	femm.mi_drawarc(diameter,0,-1*diameter,0,180,1)
-	femm.mi_addarc(-1*diameter,0,diameter,0,180,1)
-	femm.mi_selectarcsegment(0,diameter)
-	femm.mi_selectarcsegment(0,-1*diameter)
-	femm.mi_setarcsegmentprop(1,'outside',0,0)
-	femm.mi_clearselected()
+		# Draw the greometry and add boundary condition
+		femm.mi_drawarc(diameter,0,-1*diameter,0,180,1)
+		femm.mi_addarc(-1*diameter,0,diameter,0,180,1)
+		femm.mi_selectarcsegment(0,diameter)
+		femm.mi_selectarcsegment(0,-1*diameter)
+		femm.mi_setarcsegmentprop(1,'outside',0,0)
+		femm.mi_clearselected()
 
-	# Add material property for the air outside
-	femm.mi_addblocklabel(diameter,diameter)
-	femm.mi_selectlabel(diameter,diameter)
-	# femm.mi_setblockprop('Air',0,0.1,'<None>',0,0,1)
-	femm.mi_setblockprop('Air',1,0,'<None>',0,0,1)
-	femm.mi_clearselected()
+		# Add material property for the air outside
+		femm.mi_addblocklabel(diameter,diameter)
+		femm.mi_selectlabel(diameter,diameter)
+		# femm.mi_setblockprop('Air',0,0.1,'<None>',0,0,1)
+		femm.mi_setblockprop('Air',1,0,'<None>',0,0,1)
+		femm.mi_clearselected()
 
-	# Add material property for the metal of the large circle
-	femm.mi_addblocklabel(diameter-steel_width/2,0)
-	femm.mi_selectlabel(diameter-steel_width/2,0)
-	# femm.mi_setblockprop('1006 Steel',0,0.1,'<None>',0,0,1)
-	femm.mi_setblockprop('1006 Steel',1,0,'<None>',0,0,1)
-	femm.mi_clearselected()
+		# Add material property for the metal of the large circle
+		femm.mi_addblocklabel(diameter-steel_width/2,0)
+		femm.mi_selectlabel(diameter-steel_width/2,0)
+		# femm.mi_setblockprop('1006 Steel',0,0.1,'<None>',0,0,1)
+		femm.mi_setblockprop('1006 Steel',1,0,'<None>',0,0,1)
+		femm.mi_clearselected()
 
-	# Draw the magnets and add material properties
-	diameter -= steel_width
-	Draw_Points(magnet_width1)
-	Add_Material(magnet_width1)
+		# Draw the magnets and add material properties
+		diameter -= steel_width
+		Draw_Points(magnet_width1)
+		Add_Material(magnet_width1)
 
-	# Add material property for the metal and of the air gap
-	femm.mi_addblocklabel(diameter-(air_gap/2+magnet_width1),0)
-	femm.mi_selectlabel(diameter-(air_gap/2+magnet_width1),0)
-	# femm.mi_setblockprop('Air',0,0.1,'<None>',0,0,1)
-	femm.mi_setblockprop('Air',1,0,'<None>',0,0,1)
-	femm.mi_clearselected()
+		# Add material property for the metal and of the air gap
+		femm.mi_addblocklabel(diameter-(air_gap/2+magnet_width1),0)
+		femm.mi_selectlabel(diameter-(air_gap/2+magnet_width1),0)
+		# femm.mi_setblockprop('Air',0,0.1,'<None>',0,0,1)
+		femm.mi_setblockprop('Air',1,0,'<None>',0,0,1)
+		femm.mi_clearselected()
 
-	magnet_width2 = ((diameter-magnet_width1-air_gap)*(diameter-magnet_width1-air_gap) - magnet_area/math.pi)**0.5
+		magnet_width2 = ((diameter-magnet_width1-air_gap)*(diameter-magnet_width1-air_gap) - magnet_area/math.pi)**0.5
 
-	# For inside circle
-	diameter -= (air_gap + magnet_width1)
-	insidecircle = 1
-	magnet_width2 = diameter - magnet_width2
-	Draw_Points(magnet_width2)
-	femm.mi_selectgroup(1)
-	femm.mi_moverotate(0,0,degree/2)
-	femm.mi_clearselected()
-	Add_Material(magnet_width2)
+		# For inside circle
+		diameter -= (air_gap + magnet_width1)
+		insidecircle = 1
+		magnet_width2 = diameter - magnet_width2
+		Draw_Points(magnet_width2)
+		femm.mi_selectgroup(1)
+		femm.mi_moverotate(0,0,degree/2)
+		femm.mi_clearselected()
+		Add_Material(magnet_width2)
 
-	# Add material property for the metal of the small circle
-	femm.mi_addblocklabel(diameter/2,0)
-	femm.mi_selectlabel(diameter/2,0)
-	# femm.mi_setblockprop('1006 Steel',0,0.1,'<None>',0,0,1)
-	femm.mi_setblockprop('1006 Steel',1,0,'<None>',0,0,1)
-	femm.mi_clearselected()
+		# Add material property for the metal of the small circle
+		femm.mi_addblocklabel(diameter/2,0)
+		femm.mi_selectlabel(diameter/2,0)
+		# femm.mi_setblockprop('1006 Steel',0,0.1,'<None>',0,0,1)
+		femm.mi_setblockprop('1006 Steel',1,0,'<None>',0,0,1)
+		femm.mi_clearselected()
 
-	# # Save the geometry to disk so we can analyze it
-	femm.mi_saveas('strips.FEM')
+		# # Save the geometry to disk so we can analyze it
+		femm.mi_saveas('strips.FEM')
 
-	# Now,analyze the problem and load the solution when the analysis is finished
-	femm.mi_analyze()
-	femm.mi_loadsolution()
+		# Now,analyze the problem and load the solution when the analysis is finished
+		femm.mi_analyze()
+		femm.mi_loadsolution()
 
-	# Get the result
-	result = 0.0
-	m = 0
-	while m < poles:
-		femm.mo_selectblock((diameter-magnet_width2/2)*math.cos(math.radians(degree*m)),(diameter-magnet_width2/2)*math.sin(math.radians(degree*m)))
-		m += 1
-	femm.mo_selectblock(diameter/2,0)
-	result = femm.mo_blockintegral(22)
-	print('result is %g\n' % result)
+		# Get the result
+		result = 0.0
+		m = 0
+		while m < poles:
+			femm.mo_selectblock((diameter-magnet_width2/2)*math.cos(math.radians(degree*m)),(diameter-magnet_width2/2)*math.sin(math.radians(degree*m)))
+			m += 1
+		femm.mo_selectblock(diameter/2,0)
+		result = femm.mo_blockintegral(22)
+		print('result is %g\n' % result)
 
-	femm.closefemm()
+		femm.closefemm()
 
-	# Write it into workbook
-	if num == num_backup:
-		mybook = Workbook()
-	wa = mybook.active
-	middle = num - 1
-	String = 'A'+ str(middle)
-	wa[String] = result
-	mybook.save('result.xlsx')
+		# Write it into workbook
+		if num == num_backup and num2 == num2_backup:
+			mybook = Workbook()
+		wa = mybook.active
+		middle = int(num/100 - 35+num2*20)
+		String = 'A'+ str(middle)
+		wa[String] = result
+		mybook.save('result.xlsx')
 
-	# Making it a loop
-	num += 1
+		# Making it a loop
+		num += 100
+	num2 = num2 + 0.5
+	num = num_backup
 
 
 
