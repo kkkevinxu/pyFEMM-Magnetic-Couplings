@@ -29,13 +29,13 @@ from openpyxl import Workbook
 
 
 # Set the start and the end of number of poles wanted
-num = 1000
+num = 3550
 num_backup = num
-end = 5000
+end =3550
 
-num2 = 1
+num2 = 4.1
 num2_backup = num2
-end2 = 8
+end2 = 4.1
 
 # Set the parameters for magnetic couplings
 Defined_diameter = 150
@@ -131,7 +131,7 @@ while num2 <= end2:
 		materialadded = 0
 
 		# Set a porblem
-		femm.mi_probdef(0, 'millimeters','planar',1.e-8,10,30)
+		femm.mi_probdef(0, 'millimeters','planar',1.e-8,5.6,30)
 
 		# Open smart mesh
 		if smart_mesh == 0:
@@ -228,15 +228,15 @@ while num2 <= end2:
 
 		femm.closefemm()
 
-		# Write it into workbook
-		if num == num_backup and num2 == num2_backup:
-			mybook = Workbook()
-		wa = mybook.active
-		middle = int((num-num_backup)/500+1)
-		middle2 = num2+ord('A') - 1
-		String = chr(middle2)+ str(middle)
-		wa[String] = result
-		mybook.save('result.xlsx')
+		# # Write it into workbook
+		# if num == num_backup and num2 == num2_backup:
+		# 	mybook = Workbook()
+		# wa = mybook.active
+		# middle = int((num-num_backup)/500+1)
+		# middle2 = num2+ord('A') - 1
+		# String = chr(middle2)+ str(middle)
+		# wa[String] = result
+		# mybook.save('result.xlsx')
 
 		# Making it a loop
 		num += 500
